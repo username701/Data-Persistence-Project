@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+//using UnityEngine.Windows;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,10 +20,18 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
+    public string playerName;
+    public int bestScore = 0;
+    public string bestPlayerName = "Default";
+    public SaveBetweenScenes sbsScript;
+
+
     // Start is called before the first frame update
     void Start()
     {
+        sbsScript = GameObject.Find("SaveBetweenScenes").GetComponent<SaveBetweenScenes>();
+        sbsScript.LoadBestScore();
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -36,6 +46,9 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        getPlayerName();
+        printBestScore();
     }
 
     private void Update()
@@ -60,6 +73,13 @@ public class MainManager : MonoBehaviour
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
+
+        if (m_Points > bestScore)
+        {
+            bestScore = m_Points;
+            bestPlayerName = playerName;
+            printBestScore();
+        }
     }
 
     void AddPoint(int point)
@@ -72,5 +92,16 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        SaveBetweenScenes.Instance.SaveBestScore();
+    }
+
+    void getPlayerName()
+    {
+        playerName = SaveBetweenScenes.Instance.input;
+    }
+
+    void printBestScore()
+    {
+        BestScoreText.text = $"Best Score : {bestPlayerName} : {bestScore}";
     }
 }
